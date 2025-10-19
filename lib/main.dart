@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_api/book.dart';
+import 'package:flutter_api/villain_page.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart'; // Adicione este import
 
 void main() {
-  runApp(const MainApp());
+  runApp( const MaterialApp (title: "App",
+      home: MainApp(),));
 }
 
 class MainApp extends StatefulWidget {
@@ -162,7 +164,7 @@ class _MainAppState extends State<MainApp> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            book.title,
+                            book.title ?? 'Untitled',
                             style: const TextStyle(
                               color: Colors.redAccent,
                               fontSize: 26,
@@ -185,19 +187,54 @@ class _MainAppState extends State<MainApp> {
                           Text('Páginas: ${book.pages ?? 'N/A'}', style: textStyle),
                           const Divider(color: Colors.redAccent, height: 24),
                           Text(
-                            'Notas: ${book.notes.join(", ")}',
+                            'Notas: ${book.notes!.join(", ")}',
                             style: textStyle.copyWith(fontSize: 16, fontStyle: FontStyle.italic, color: Colors.red[100]),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Criado em: ${dateFormat.format(book.createdAt)}', // <-- Aqui está a data formatada
+                            'Criado em: ${book.createdAt != null ? dateFormat.format(book.createdAt!) : "N/A"}', // <-- Aqui está a data formatada
                             style: textStyle.copyWith(fontSize: 16),
                           ),
                           const SizedBox(height: 8),
-                          Text(
-                            'Vilões: ${book.villains.isEmpty ? 'Nenhum' : book.villains.map((v) => v.name).join(", ")}',
-                            style: textStyle.copyWith(fontSize: 16, color: Colors.redAccent),
-                          ),
+                          // Vilões como links navegáveis para VillainPage (envia a URL via arguments)
+                          book.villains!.isEmpty
+                              ? Text('Vilões: Nenhum', style: textStyle.copyWith(fontSize: 16, color: Colors.redAccent))
+                              : Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Wrap(
+                                    spacing: 8,
+                                    runSpacing: 4,
+                                    children: <Widget>[
+                                      Text('Vilões:', style: textStyle.copyWith(fontSize: 16, color: Colors.redAccent)),
+                                      ...book.villains!.map((v) {
+                                        final hasUrl = v.url != null && v.url!.isNotEmpty;
+                                        return GestureDetector(
+                                          onTap: hasUrl
+                                              ? () {
+                                                  Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                      builder: (_) => const VillainPage(),
+                                                      settings: RouteSettings(arguments: v.url),
+                                                    ),
+                                                  );
+                                                }
+                                              : null,
+                                          child: MouseRegion(
+                                            cursor: hasUrl ? SystemMouseCursors.click : SystemMouseCursors.basic,
+                                            child: Text(
+                                              v.name?? 'Unknown',
+                                              style: textStyle.copyWith(
+                                                fontSize: 16,
+                                                color: hasUrl ? Colors.redAccent : Colors.white70,
+                                                decoration: hasUrl ? TextDecoration.underline : TextDecoration.none,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }),
+                                    ],
+                                  ),
+                                ),
                         ],
                       ),
                     ),

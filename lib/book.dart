@@ -3,18 +3,16 @@ import 'package:flutter_api/villain.dart';
 
 class Book {
   // Campos anuláveis (podem ser null)
-  final int? id;
-  final int? year;
-  final int? pages;
-
-  // Campos não-anuláveis (sempre terão um valor, com fallback no fromJson)
-  final String title;
-  final String handle;
-  final String publisher;
-  final String isbn;
-  final List<String> notes;
-  final DateTime createdAt;
-  final List<Villain> villains;
+   int? id;
+   int? year;
+   int? pages;
+   String? title;
+   String? handle;
+   String? publisher;
+   String? isbn;
+   List<String>? notes;
+   DateTime? createdAt;
+   List<Villain>? villains;
 
   Book({
     this.id,
@@ -41,6 +39,9 @@ class Book {
         notes = const [],
         createdAt = DateTime.now(),
         villains = const [];
+Book.fromJsonResumido(Map<String, dynamic> data)
+      :         title = (data['title'] as String?) ?? '';
+
 
   // Construtor ajustado para leitura do JSON (espera o MAP do livro, não o JSON completo)
   Book.fromJson(Map<String, dynamic> data)
@@ -62,7 +63,7 @@ class Book {
             : DateTime.now(),
         villains = (data['villains'] is List)
             ? (data['villains'] as List)
-                .map((v) => Villain.fromJson(v as Map<String, dynamic>))
+                .map((v) => Villain.fromJsonNameUrl(v as Map<String, dynamic>))
                 .toList()
             : <Villain>[];
 }
